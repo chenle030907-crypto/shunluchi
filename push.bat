@@ -15,6 +15,9 @@ if not exist ".git" (
     git remote add origin https://github.com/chenle030907-crypto/shunluchi.git
 )
 
+echo Renaming branch to main...
+git branch -M main
+
 git add .
 git commit -m "feat: Amap route planning API + Haversine distance estimation"
 git push -u origin main --force
