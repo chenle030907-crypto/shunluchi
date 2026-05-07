@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#137f7b" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="顺路吃" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta
+      name="description"
+      content="顺路吃：从文案、截图和视频灵感里整理景点、美食和顺路路线。"
+    />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+    <title>顺路吃 - 美食旅行攻略原型</title>
+    <link rel="stylesheet" href="./styles.css?v=library-backup-2" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">AI Food Route Planner</p>
+          <h1>顺路吃</h1>
+        </div>
+        <div class="trip-controls" aria-label="行程设置">
+          <div class="api-status" id="apiStatus">
+            <span class="api-dot" aria-hidden="true"></span>
+            <span>接口检测中</span>
+          </div>
+          <div class="share-access" id="shareAccess">
+            <span>其他设备</span>
+            <button type="button" id="copyLanUrlBtn">检测中</button>
+          </div>
+          <label>
+            城市
+            <select id="citySelect">
+              <option>上海</option>
+              <option>杭州</option>
+              <option>成都</option>
+              <option>广州</option>
+            </select>
+          </label>
+          <label>
+            日期
+            <input id="tripDate" type="date" />
+          </label>
+          <label>
+            步行上限
+            <select id="walkLimit">
+              <option value="10">10 分钟</option>
+              <option value="15" selected>15 分钟</option>
+              <option value="25">25 分钟</option>
+            </select>
+          </label>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <div class="side-stack">
+          <section class="panel import-panel" aria-labelledby="importTitle">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Step 1</p>
+                <h2 id="importTitle">导入灵感</h2>
+              </div>
+              <span class="status-pill">原型模式</span>
+            </div>
+
+            <label class="field-block">
+              探店文案、行程描述或截图文字
+              <textarea
+                id="sourceInput"
+                rows="7"
+                placeholder="粘贴分享文案、手动描述，或上传截图后直接点识别预览"
+              ></textarea>
+            </label>
+
+            <div class="media-ingest">
+              <div class="list-title">截图/视频辅助识别</div>
+              <div class="resolver-grid" id="resolverGrid">
+                <div class="resolver-card" data-stage="text">
+                  <strong>文案</strong>
+                  <span>待输入</span>
+                </div>
+                <div class="resolver-card" data-stage="ocr">
+                  <strong>截图 OCR</strong>
+                  <span>未上传</span>
+                </div>
+                <div class="resolver-card" data-stage="frame">
+                  <strong>视频帧</strong>
+                  <span>未上传</span>
+                </div>
+                <div class="resolver-card" data-stage="audio">
+                  <strong>语音字幕</strong>
+                  <span>未上传</span>
+                </div>
+              </div>
+
+              <label class="upload-box">
+                上传截图/视频
+                <input id="mediaInput" type="file" accept="image/*,video/*" multiple />
+              </label>
+
+              <div class="media-list" id="mediaList"></div>
+            </div>
+
+            <div class="button-row">
+              <button class="primary-btn" id="extractBtn" type="button">
+                <span class="btn-icon" aria-hidden="true">+</span>
+                识别预览
+              </button>
+              <button class="secondary-btn" id="clearBtn" type="button">清空</button>
+            </div>
+
+            <div class="extraction-box" id="extractionBox">
+              <p class="muted">点击识别后，这里会预览从文案和截图中抽取出的店名、景点和菜品，确认后再保存到资料库。</p>
+            </div>
+          </section>
+
+          <section class="panel library-panel" aria-labelledby="libraryTitle">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Database</p>
+                <h2 id="libraryTitle">识别资料库</h2>
+              </div>
+              <div class="status-group">
+                <span class="status-pill sync-checking" id="cloudSyncStatus">云端检测中</span>
+                <span class="status-pill" id="libraryCount">0 条</span>
+              </div>
+            </div>
+
+            <div class="library-actions">
+              <button class="secondary-btn compact" id="refreshPoiBtn" type="button">重新补全</button>
+              <button class="secondary-btn compact" id="copyCloudLinkBtn" type="button">复制同步链接</button>
+              <button class="secondary-btn compact" id="exportLibraryBtn" type="button">导出 JSON</button>
+              <button class="secondary-btn compact" id="importLibraryBtn" type="button">导入 JSON</button>
+              <input id="importLibraryInput" type="file" accept="application/json,.json" hidden />
+              <button class="secondary-btn compact danger-text" id="clearLibraryBtn" type="button">清空资料库</button>
+            </div>
+
+            <div class="library-list" id="libraryList"></div>
+
+            <div class="entity-database">
+              <div class="list-title">地点详情库</div>
+              <div class="entity-summary" id="entitySummary"></div>
+              <div class="entity-list" id="entityList"></div>
+            </div>
+          </section>
+        </div>
+
+        <section class="panel wishlist-panel" aria-labelledby="wishlistTitle">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Step 2</p>
+              <h2 id="wishlistTitle">愿望清单</h2>
+            </div>
+          </div>
+
+          <div class="input-composer">
+            <label>
+              添加景点
+              <div class="inline-input">
+                <input id="attractionInput" type="text" placeholder="例如：田子坊" />
+                <button id="addAttractionBtn" type="button" aria-label="添加景点">+</button>
+              </div>
+            </label>
+            <label>
+              添加想吃
+              <div class="inline-input">
+                <input id="foodInput" type="text" placeholder="例如：生煎" />
+                <button id="addFoodBtn" type="button" aria-label="添加想吃">+</button>
+              </div>
+            </label>
+          </div>
+
+          <div class="wishlist-grid">
+            <div>
+              <div class="list-title">想去的景点</div>
+              <div class="place-list" id="attractionList"></div>
+            </div>
+            <div>
+              <div class="list-title">想吃的美食</div>
+              <div class="chip-list" id="foodList"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="recommend-area">
+          <div class="panel focus-panel" aria-labelledby="focusTitle">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Step 3</p>
+                <h2 id="focusTitle">选择景点，找附近想吃</h2>
+              </div>
+              <button class="secondary-btn compact" id="routeBtn" type="button">生成路线</button>
+            </div>
+
+            <div class="selected-place" id="selectedPlace"></div>
+
+            <div class="filters" aria-label="推荐筛选">
+              <div class="segmented" id="mealTabs">
+                <button type="button" data-meal="breakfast">早餐</button>
+                <button type="button" data-meal="lunch" class="active">午餐</button>
+                <button type="button" data-meal="tea">下午茶</button>
+                <button type="button" data-meal="dinner">晚餐</button>
+              </div>
+              <label class="toggle">
+                <input id="openOnly" type="checkbox" checked />
+                只看当前营业
+              </label>
+            </div>
+
+            <div class="recommend-list" id="recommendList"></div>
+          </div>
+
+          <aside class="panel map-panel" aria-labelledby="mapTitle">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Live Preview</p>
+                <h2 id="mapTitle">地图与路线</h2>
+              </div>
+            </div>
+
+            <div class="map-canvas" id="mapCanvas" aria-label="路线示意图"></div>
+
+            <div class="itinerary" id="itinerary">
+              <p class="muted">选择景点后生成一条顺路吃喝路线。</p>
+            </div>
+          </aside>
+        </section>
+      </main>
+    </div>
+
+    <script src="./app.js?v=library-backup-2"></script>
+    <script src="./library-import.js?v=library-backup-2"></script>
+  </body>
+</html>

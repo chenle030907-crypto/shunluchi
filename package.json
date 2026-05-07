@@ -1,0 +1,16 @@
+{
+  "name": "shunluchi",
+  "version": "0.1.0",
+  "private": true,
+  "description": "顺路吃：从小红书/抖音灵感生成美食旅行路线的 Web App 原型。",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "check": "node --check server.js && node --check app.js && node --check library-import.js && node --check sw.js",
+    "preflight": "npm run check && node scripts/preflight.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
