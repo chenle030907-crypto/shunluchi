@@ -168,11 +168,21 @@ async function loadCloudLibrary() {
   }
 }
 
+function getDefaultAttractions() {
+  const city = document.querySelector("#cityInput")?.value?.trim() || "上海";
+  return getCityAttractions(city).map((a) => ({ ...a }));
+}
+
+function getDefaultFoods() {
+  return []; // 从空白开始，用户自己添加想吃的美食
+}
+
 const state = {
   activeAttractionId: "museum",
   activeMeal: "lunch",
   openOnly: true,
   walkLimit: 15,
+  priceFilter: "all",
   library: loadLibrary(),
   cloudSync: "checking",
   apiProvider: "checking",
@@ -185,39 +195,8 @@ const state = {
   linkInspection: null,
   linkPreview: null,
   pendingEntry: null,
-  attractions: [
-    {
-      id: "museum",
-      name: "上海博物馆",
-      area: "人民广场",
-      address: "黄浦区人民大道 201 号",
-      lng: 121.4737,
-      lat: 31.2304,
-      x: 32,
-      y: 36,
-    },
-    {
-      id: "wukang",
-      name: "武康路",
-      area: "徐汇区",
-      address: "徐汇区武康路历史文化名街",
-      lng: 121.4380,
-      lat: 31.2071,
-      x: 38,
-      y: 58,
-    },
-    {
-      id: "bund",
-      name: "外滩",
-      area: "黄浦区",
-      address: "中山东一路",
-      lng: 121.4907,
-      lat: 31.2400,
-      x: 70,
-      y: 40,
-    },
-  ],
-  foods: ["小笼包", "蟹黄面", "咖啡", "本帮菜"],
+  attractions: getDefaultAttractions(),
+  foods: getDefaultFoods(),
 };
 
 const foodDatabase = [
@@ -501,6 +480,150 @@ const dishKnowledgeBase = {
   火锅: { category: "正餐", notes: ["用餐时间较长", "晚餐更适合"] },
 };
 
+// ═══ 多城市数据 ═══
+const cityData = {
+  杭州: {
+    attractions: [
+      { id: "westlake", name: "西湖", area: "西湖区", address: "西湖区龙井路 1 号", lng: 120.1413, lat: 30.2427, x: 30, y: 48, opening: "全天开放", notes: ["建议骑行或步行环湖", "周末人多", "晴天傍晚光线最好"] },
+      { id: "lingyin", name: "灵隐寺", area: "西湖区", address: "西湖区法云弄 1 号", lng: 120.1008, lat: 30.2475, x: 22, y: 44, opening: "07:00-18:00", notes: ["门票约 75 元", "早上人少更清净", "适合半天游览"] },
+      { id: "hefang", name: "河坊街", area: "上城区", address: "上城区河坊街", lng: 120.1728, lat: 30.2416, x: 44, y: 50, opening: "多数店铺 10:00-22:00", notes: ["小吃步行街", "适合晚上逛", "可顺路南宋御街"] },
+    ],
+    foods: [
+      { id: "louwailou", name: "楼外楼", match: ["西湖醋鱼", "龙井虾仁"], category: "杭帮菜", area: "西湖区", address: "西湖区孤山路 30 号", opening: "10:30-20:30", meals: ["lunch", "dinner"], open: true, price: "人均 150", lng: 120.1380, lat: 30.2530, note: "西湖边老字号，游客较多建议预约。", reason: "杭帮菜经典，逛完西湖直接去。" },
+      { id: "pianerchuan", name: "菊英面馆", match: ["片儿川", "面"], category: "面馆", area: "上城区", address: "上城区中河南路 12 号", opening: "06:30-13:30", meals: ["breakfast", "lunch"], open: true, price: "人均 25", lng: 120.1750, lat: 30.2350, note: "杭州老牌面馆，片儿川是招牌，只做早午市。", reason: "地道杭味早餐，配河坊街逛吃线。" },
+      { id: "greentea_hz", name: "绿茶餐厅（龙井路）", match: ["茶", "龙井虾仁", "创意菜"], category: "创意杭帮菜", area: "西湖区", address: "西湖区龙井路 83 号", opening: "11:00-21:00", meals: ["lunch", "dinner"], open: true, price: "人均 85", lng: 120.1230, lat: 30.2380, note: "开在茶园里的餐厅，环境很好，周末排队严重。", reason: "环境独特的茶文化体验，离灵隐寺不远。" },
+      { id: "congbaohui", name: "孙奶奶葱包烩", match: ["葱包烩", "小吃"], category: "小吃", area: "上城区", address: "上城区中山南路 391 号", opening: "07:00-18:00", meals: ["breakfast", "lunch", "tea"], open: true, price: "人均 10", lng: 120.1710, lat: 30.2370, note: "杭州地道小吃，靠近河坊街。", reason: "便宜又地道的杭味小吃，逛河坊街时顺手买。" },
+      { id: "zhihuiguan", name: "知味观（湖滨总店）", match: ["小笼包", "杭州菜"], category: "杭帮点心", area: "上城区", address: "上城区仁和路 83 号", opening: "06:00-21:00", meals: ["breakfast", "lunch", "dinner"], open: true, price: "人均 70", lng: 120.1650, lat: 30.2490, note: "百年老字号，小笼和猫耳朵都值得一试。", reason: "品类齐全的老字号，适合不同口味需求。" },
+    ],
+    poiKB: {
+      西湖: { kind: "attraction", category: "湖泊景区", area: "西湖区", address: "西湖区龙井路 1 号", opening: "全天开放", notes: ["建议骑行或步行", "周末人多"], confidence: 0.95, source: "地图补全", lng: 120.1413, lat: 30.2427, x: 30, y: 48 },
+      灵隐寺: { kind: "attraction", category: "寺庙", area: "西湖区", address: "西湖区法云弄 1 号", opening: "07:00-18:00", notes: ["门票约 75 元", "早上人少"], confidence: 0.93, source: "地图补全", lng: 120.1008, lat: 30.2475, x: 22, y: 44 },
+      河坊街: { kind: "attraction", category: "历史街区", area: "上城区", address: "上城区河坊街", opening: "多数店铺 10:00-22:00", notes: ["小吃步行街", "适合晚上逛"], confidence: 0.91, source: "地图补全", lng: 120.1728, lat: 30.2416, x: 44, y: 50 },
+      楼外楼: { kind: "restaurant", category: "杭帮菜", area: "西湖区", address: "西湖区孤山路 30 号", opening: "10:30-20:30", notes: ["老字号", "游客较多"], confidence: 0.90, source: "地图补全", lng: 120.1380, lat: 30.2530, x: 28, y: 42 },
+      知味观: { kind: "restaurant", category: "杭帮点心", area: "上城区", address: "上城区仁和路 83 号", opening: "06:00-21:00", notes: ["百年老字号", "品类齐全"], confidence: 0.92, source: "地图补全", lng: 120.1650, lat: 30.2490, x: 40, y: 46 },
+    },
+    dishKB: {
+      西湖醋鱼: { category: "杭帮菜", notes: ["酸甜口味", "适合午餐或晚餐"] },
+      龙井虾仁: { category: "杭帮菜", notes: ["清淡鲜嫩", "配龙井茶体验更好"] },
+      片儿川: { category: "面食", notes: ["杭州特色面", "早午餐最佳"] },
+      葱包烩: { category: "小吃", notes: ["街头小吃", "趁热吃"] },
+    },
+  },
+
+  成都: {
+    attractions: [
+      { id: "kuaizhai", name: "宽窄巷子", area: "青羊区", address: "青羊区长顺街附近", lng: 104.0580, lat: 30.6688, x: 36, y: 52, opening: "全天开放，店铺约 10:00-22:00", notes: ["游客必打卡", "小吃和文创店多", "适合下午到晚上"] },
+      { id: "jinli", name: "锦里", area: "武侯区", address: "武侯区武侯祠大街 231 号", lng: 104.0488, lat: 30.6455, x: 30, y: 58, opening: "多数店铺 10:00-22:00", notes: ["紧邻武侯祠", "夜景好看", "小吃选择多"] },
+      { id: "panda", name: "大熊猫繁育基地", area: "成华区", address: "成华区熊猫大道 1375 号", lng: 104.1318, lat: 30.7368, x: 52, y: 30, opening: "07:30-18:00", notes: ["门票 55 元", "早上熊猫更活跃", "建议预留 3 小时"] },
+    ],
+    foods: [
+      { id: "shujiuxiang", name: "蜀九香火锅（总店）", match: ["火锅", "麻辣"], category: "火锅", area: "锦江区", address: "锦江区一环路东五段 87 号", opening: "11:00-02:00", meals: ["lunch", "dinner"], open: true, price: "人均 120", lng: 104.0890, lat: 30.6430, note: "成都必吃火锅，排队严重建议线上取号。", reason: "成都火锅代表，适合晚餐慢慢吃。" },
+      { id: "longchaoshou", name: "龙抄手（春熙路）", match: ["抄手", "小吃"], category: "小吃", area: "锦江区", address: "锦江区春熙路南段 8 号", opening: "07:00-21:00", meals: ["breakfast", "lunch", "dinner"], open: true, price: "人均 30", lng: 104.0820, lat: 30.6520, note: "百年老店，红油抄手和原汤抄手都值得一试。", reason: "成都小吃招牌，离宽窄巷子不远。" },
+      { id: "chendoufu", name: "陈麻婆豆腐（骡马市）", match: ["麻婆豆腐", "川菜"], category: "川菜", area: "青羊区", address: "青羊区西玉龙街 197 号", opening: "11:00-21:00", meals: ["lunch", "dinner"], open: true, price: "人均 65", lng: 104.0660, lat: 30.6700, note: "麻婆豆腐发源地，口味正宗。", reason: "正宗川菜体验，离宽窄巷子近。" },
+      { id: "xiaojunlv", name: "小郡肝串串香", match: ["串串", "火锅", "麻辣"], category: "串串香", area: "武侯区", address: "武侯区科华北路 143 号", opening: "11:00-01:00", meals: ["lunch", "dinner"], open: true, price: "人均 70", lng: 104.0790, lat: 30.6290, note: "成都很火的串串，比火锅更灵活。", reason: "成都特色串串，适合逛完锦里去吃。" },
+      { id: "zhongshuijiao", name: "钟水饺（总店）", match: ["水饺", "小吃"], category: "小吃", area: "青羊区", address: "青羊区提督街 7 号", opening: "08:00-20:00", meals: ["breakfast", "lunch"], open: true, price: "人均 20", lng: 104.0700, lat: 30.6630, note: "甜辣口的钟水饺，成都独特风格。", reason: "成都小吃名片，早餐或午餐都合适。" },
+    ],
+    poiKB: {
+      宽窄巷子: { kind: "attraction", category: "历史街区", area: "青羊区", address: "青羊区长顺街附近", opening: "全天开放", notes: ["游客必打卡", "小吃文创多"], confidence: 0.94, source: "地图补全", lng: 104.0580, lat: 30.6688, x: 36, y: 52 },
+      锦里: { kind: "attraction", category: "古街", area: "武侯区", address: "武侯区武侯祠大街 231 号", opening: "多数店铺 10:00-22:00", notes: ["紧邻武侯祠", "夜景好看"], confidence: 0.92, source: "地图补全", lng: 104.0488, lat: 30.6455, x: 30, y: 58 },
+      大熊猫繁育基地: { kind: "attraction", category: "动物园", area: "成华区", address: "成华区熊猫大道 1375 号", opening: "07:30-18:00", notes: ["门票 55 元", "早上更活跃"], confidence: 0.93, source: "地图补全", lng: 104.1318, lat: 30.7368, x: 52, y: 30 },
+      蜀九香火锅: { kind: "restaurant", category: "火锅", area: "锦江区", address: "锦江区一环路东五段 87 号", opening: "11:00-02:00", notes: ["成都必吃", "排队严重"], confidence: 0.88, source: "地图补全", lng: 104.0890, lat: 30.6430, x: 50, y: 62 },
+      龙抄手: { kind: "restaurant", category: "小吃", area: "锦江区", address: "锦江区春熙路南段 8 号", opening: "07:00-21:00", notes: ["百年老店", "招牌抄手"], confidence: 0.90, source: "地图补全", lng: 104.0820, lat: 30.6520, x: 46, y: 56 },
+    },
+    dishKB: {
+      火锅: { category: "正餐", notes: ["用餐时间较长", "晚餐更适合"] },
+      串串: { category: "小吃", notes: ["比火锅灵活", "适合 1-2 人"] },
+      麻婆豆腐: { category: "川菜", notes: ["麻辣下饭", "午餐晚餐皆可"] },
+      抄手: { category: "小吃", notes: ["成都街头常见", "早餐午餐佳选"] },
+    },
+  },
+
+  广州: {
+    attractions: [
+      { id: "cantontower", name: "广州塔", area: "海珠区", address: "海珠区阅江西路 222 号", lng: 113.3245, lat: 23.1064, x: 54, y: 44, opening: "09:30-22:30", notes: ["登塔门票约 150 元", "夜景更好看", "建议提前网上购票"] },
+      { id: "shamian", name: "沙面", area: "荔湾区", address: "荔湾区沙面南街", lng: 113.2435, lat: 23.1102, x: 20, y: 42, opening: "全天开放", notes: ["欧陆建筑群", "适合拍照散步", "免费开放"] },
+      { id: "chenjiaci", name: "陈家祠", area: "荔湾区", address: "荔湾区中山七路恩龙里 34 号", lng: 113.2480, lat: 23.1270, x: 22, y: 34, opening: "08:30-17:30", notes: ["门票 10 元", "岭南建筑代表", "广东民间工艺博物馆"] },
+    ],
+    foods: [
+      { id: "taotaoju", name: "陶陶居（第十甫路）", match: ["早茶", "点心", "虾饺"], category: "早茶/粤菜", area: "荔湾区", address: "荔湾区第十甫路 20 号", opening: "07:30-22:00", meals: ["breakfast", "lunch", "dinner"], open: true, price: "人均 100", lng: 113.2420, lat: 23.1180, note: "百年老字号茶楼，虾饺和烧卖是招牌。", reason: "广州早茶必打卡，适合早上去慢慢吃。" },
+      { id: "yindeng", name: "银灯食府", match: ["肠粉", "点心", "粤菜"], category: "粤菜/点心", area: "越秀区", address: "越秀区起义路 2 号", opening: "08:00-21:30", meals: ["breakfast", "lunch", "dinner"], open: true, price: "人均 80", lng: 113.2650, lat: 23.1220, note: "老牌茶餐厅，肠粉和萝卜糕很受欢迎。", reason: "地道粤式点心，适合午餐或下午茶。" },
+      { id: "shaoer", name: "陈记烧鹅", match: ["烧鹅", "粤菜"], category: "烧腊", area: "越秀区", address: "越秀区惠福东路 429 号", opening: "10:30-20:30", meals: ["lunch", "dinner"], open: true, price: "人均 55", lng: 113.2690, lat: 23.1230, note: "烧鹅皮脆肉嫩，建议早点去以免售罄。", reason: "广州烧腊代表，适合午餐。" },
+      { id: "baozai", name: "惠食佳（东风东路）", match: ["煲仔饭", "啫啫煲"], category: "粤菜", area: "越秀区", address: "越秀区东风东路 760 号", opening: "11:00-14:30, 17:00-21:30", meals: ["lunch", "dinner"], open: true, price: "人均 130", lng: 113.2950, lat: 23.1330, note: "煲仔饭和啫啫煲都很出色，排队严重。", reason: "广州煲菜经典，适合晚上去感受镬气。" },
+      { id: "nanxin", name: "南信牛奶甜品专家", match: ["甜品", "双皮奶", "姜撞奶"], category: "甜品", area: "荔湾区", address: "荔湾区第十甫路 47 号", opening: "09:00-22:00", meals: ["tea", "dinner"], open: true, price: "人均 25", lng: 113.2430, lat: 23.1180, note: "广州老牌甜品店，双皮奶和姜撞奶是经典。", reason: "逛完上下九来一碗，完美下午茶收尾。" },
+    ],
+    poiKB: {
+      广州塔: { kind: "attraction", category: "地标", area: "海珠区", address: "海珠区阅江西路 222 号", opening: "09:30-22:30", notes: ["登塔 150 元", "夜景好看"], confidence: 0.95, source: "地图补全", lng: 113.3245, lat: 23.1064, x: 54, y: 44 },
+      沙面: { kind: "attraction", category: "历史街区", area: "荔湾区", address: "荔湾区沙面南街", opening: "全天开放", notes: ["欧陆建筑", "免费"], confidence: 0.93, source: "地图补全", lng: 113.2435, lat: 23.1102, x: 20, y: 42 },
+      陈家祠: { kind: "attraction", category: "博物馆", area: "荔湾区", address: "荔湾区中山七路恩龙里 34 号", opening: "08:30-17:30", notes: ["门票 10 元", "岭南建筑"], confidence: 0.92, source: "地图补全", lng: 113.2480, lat: 23.1270, x: 22, y: 34 },
+      陶陶居: { kind: "restaurant", category: "早茶/粤菜", area: "荔湾区", address: "荔湾区第十甫路 20 号", opening: "07:30-22:00", notes: ["百年老字号", "招牌虾饺"], confidence: 0.94, source: "地图补全", lng: 113.2420, lat: 23.1180, x: 19, y: 38 },
+      银灯食府: { kind: "restaurant", category: "粤菜/点心", area: "越秀区", address: "越秀区起义路 2 号", opening: "08:00-21:30", notes: ["老牌茶餐厅", "肠粉推荐"], confidence: 0.88, source: "地图补全", lng: 113.2650, lat: 23.1220, x: 28, y: 36 },
+    },
+    dishKB: {
+      早茶: { category: "点心", notes: ["广州特色", "适合早上去", "慢慢吃"] },
+      肠粉: { category: "小吃", notes: ["早中晚都适合", "选老字号"] },
+      烧鹅: { category: "烧腊", notes: ["午餐更佳", "早点去"] },
+      煲仔饭: { category: "主食", notes: ["晚餐首选", "现点现做"] },
+      双皮奶: { category: "甜品", notes: ["下午茶佳品", "冷热皆可"] },
+    },
+  },
+
+  上海: {
+    attractions: [
+      { id: "museum", name: "上海博物馆", area: "人民广场", address: "黄浦区人民大道 201 号", lng: 121.4737, lat: 31.2304, x: 32, y: 36 },
+      { id: "wukang", name: "武康路", area: "徐汇区", address: "徐汇区武康路历史文化名街", lng: 121.4380, lat: 31.2071, x: 38, y: 58 },
+      { id: "bund", name: "外滩", area: "黄浦区", address: "中山东一路", lng: 121.4907, lat: 31.2400, x: 70, y: 40 },
+    ],
+    foods: [
+      { id: "lailai", name: "莱莱小笼", match: ["小笼包"], category: "小笼包", area: "人民广场", address: "黄浦区广西北路附近", opening: "07:00-20:30", meals: ["breakfast", "lunch"], open: true, price: "人均 45", lng: 121.4752, lat: 31.2356, note: "热门时段排队明显，建议错峰或先取号。", reason: "和你的小笼包愿望高度匹配，适合上海博物馆前后安排。" },
+      { id: "an-niang", name: "阿娘面馆", match: ["蟹黄面", "面"], category: "面馆", area: "淮海路", address: "黄浦区思南路附近", opening: "10:30-14:00, 17:00-20:00", meals: ["lunch", "dinner"], open: true, price: "人均 60", lng: 121.4650, lat: 31.2168, note: "午饭档更稳，晚上可能提前售罄。", reason: "适合把武康路和淮海路连成半日逛吃线。" },
+      { id: "rac", name: "RAC Coffee", match: ["咖啡", "早午餐"], category: "咖啡/早午餐", area: "武康路", address: "徐汇区安福路附近", opening: "08:00-22:00", meals: ["breakfast", "tea"], open: true, price: "人均 90", lng: 121.4375, lat: 31.2120, note: "周末下午座位紧张，适合工作日或早一点去。", reason: "离武康路近，逛累了可以直接切到下午茶。" },
+      { id: "benbang", name: "茂隆餐厅", match: ["本帮菜", "红烧肉"], category: "本帮菜", area: "南京西路", address: "静安区南京西路附近", opening: "11:00-14:00, 17:00-21:00", meals: ["lunch", "dinner"], open: true, price: "人均 120", lng: 121.4560, lat: 31.2308, note: "更适合 2 人以上点菜，提前电话确认排队情况。", reason: "本帮菜匹配度高，适合博物馆或外滩之后打车过去。" },
+      { id: "crab", name: "蟹尊苑", match: ["蟹黄面", "蟹粉"], category: "蟹黄面", area: "南京东路", address: "黄浦区南京东路商圈", opening: "11:00-21:00", meals: ["lunch", "dinner"], open: true, price: "人均 160", lng: 121.4823, lat: 31.2387, note: "价格偏高，适合把它当成当天重点餐。", reason: "如果今晚去外滩，看夜景前吃蟹黄面路线很顺。" },
+      { id: "night", name: "老正兴菜馆", match: ["本帮菜"], category: "老字号本帮菜", area: "豫园", address: "黄浦区福佑路附近", opening: "10:30-20:30", meals: ["lunch", "dinner"], open: false, price: "人均 110", lng: 121.4945, lat: 31.2282, note: "原型中标记为暂不可用，用来展示只看当前营业过滤。", reason: "靠近外滩和豫园，适合作为传统上海菜备选。" },
+    ],
+    poiKB: {
+      上海博物馆: { kind: "attraction", category: "博物馆", area: "人民广场", address: "黄浦区人民大道 201 号", opening: "09:00-17:00（周一通常闭馆）", notes: ["热门展览需预约", "建议预留 1.5 到 2 小时"], confidence: 0.94, source: "地图补全模拟", lng: 121.4737, lat: 31.2304, x: 32, y: 36 },
+      武康路: { kind: "attraction", category: "历史街区", area: "徐汇区", address: "徐汇区武康路历史文化名街", opening: "全天开放", notes: ["适合步行拍照", "周末下午人多"], confidence: 0.92, source: "地图补全模拟", lng: 121.4380, lat: 31.2071, x: 38, y: 58 },
+      外滩: { kind: "attraction", category: "城市地标", area: "黄浦区", address: "中山东一路", opening: "全天开放", notes: ["夜景更好看", "节假日人流密集"], confidence: 0.93, source: "地图补全模拟", lng: 121.4907, lat: 31.2400, x: 70, y: 40 },
+      田子坊: { kind: "attraction", category: "街区", area: "黄浦区", address: "泰康路 210 弄附近", opening: "多数店铺约 10:00-22:00", notes: ["店铺营业时间不完全一致", "适合拍照"], confidence: 0.86, source: "地图补全模拟", lng: 121.4692, lat: 31.2093, x: 46, y: 60 },
+      豫园: { kind: "attraction", category: "园林/商圈", area: "黄浦区", address: "黄浦区福佑路 168 号附近", opening: "园区约 09:00-16:30，商圈更晚", notes: ["园林和商圈开放时间不同", "节假日客流大"], confidence: 0.88, source: "地图补全模拟", lng: 121.4925, lat: 31.2274, x: 64, y: 54 },
+      莱莱小笼: { kind: "restaurant", category: "小笼包", area: "人民广场", address: "黄浦区广西北路附近", opening: "07:00-20:30", notes: ["热门时段排队明显"], confidence: 0.89, source: "地图补全模拟", lng: 121.4752, lat: 31.2356, x: 46, y: 43 },
+      阿娘面馆: { kind: "restaurant", category: "面馆", area: "淮海路", address: "黄浦区思南路附近", opening: "10:30-14:00, 17:00-20:00", notes: ["午饭档更稳", "晚上可能售罄"], confidence: 0.87, source: "地图补全模拟", lng: 121.4650, lat: 31.2168, x: 48, y: 62 },
+      "RAC Coffee": { kind: "restaurant", category: "咖啡/早午餐", area: "武康路", address: "徐汇区安福路附近", opening: "08:00-22:00", notes: ["周末下午座位紧张"], confidence: 0.90, source: "地图补全模拟", lng: 121.4375, lat: 31.2120, x: 42, y: 70 },
+      蟹尊苑: { kind: "restaurant", category: "蟹黄面", area: "南京东路", address: "黄浦区南京东路商圈", opening: "11:00-21:00", notes: ["价格偏高", "适合重点餐"], confidence: 0.86, source: "地图补全模拟", lng: 121.4823, lat: 31.2387, x: 76, y: 35 },
+      茂隆餐厅: { kind: "restaurant", category: "本帮菜", area: "南京西路", address: "静安区南京西路附近", opening: "11:00-14:00, 17:00-21:00", notes: ["提前确认排队"], confidence: 0.84, source: "地图补全模拟", lng: 121.4560, lat: 31.2308, x: 39, y: 28 },
+    },
+    dishKB: {
+      小笼包: { category: "上海小吃", notes: ["适合早餐或午餐", "优先匹配小笼包店"] },
+      蟹黄面: { category: "面食", notes: ["价格波动大", "适合作为当天重点餐"] },
+      咖啡: { category: "饮品/下午茶", notes: ["适合穿插在步行街区"] },
+      本帮菜: { category: "上海菜", notes: ["适合午餐或晚餐", "多人点菜更好"] },
+      生煎: { category: "上海小吃", notes: ["适合早餐或午餐", "外带也方便"] },
+      火锅: { category: "正餐", notes: ["用餐时间较长", "晚餐更适合"] },
+    },
+  },
+};
+
+function getCityData(city) {
+  return cityData[city] || { attractions: [], foods: [], poiKB: {}, dishKB: {} };
+}
+
+function getCityAttractions(city) {
+  return getCityData(city).attractions || [];
+}
+
+function getCityFoods(city) {
+  return getCityData(city).foods || [];
+}
+
+function getCityPoiKB(city) {
+  return getCityData(city).poiKB || {};
+}
+
+function getCityDishKB(city) {
+  return getCityData(city).dishKB || {};
+}
+
 const mealLabels = {
   breakfast: "早餐",
   lunch: "午餐",
@@ -529,6 +652,7 @@ const els = {
   itinerary: document.querySelector("#itinerary"),
   mealTabs: document.querySelector("#mealTabs"),
   openOnly: document.querySelector("#openOnly"),
+  priceFilter: document.querySelector("#priceFilter"),
   walkLimit: document.querySelector("#walkLimit"),
   tripDate: document.querySelector("#tripDate"),
   routeBtn: document.querySelector("#routeBtn"),
@@ -543,6 +667,7 @@ const els = {
   entityList: document.querySelector("#entityList"),
   apiStatus: document.querySelector("#apiStatus"),
   copyLanUrlBtn: document.querySelector("#copyLanUrlBtn"),
+  shareRouteBtn: document.querySelector("#shareRouteBtn"),
 };
 
 function normalizeId(name) {
@@ -943,7 +1068,9 @@ async function fetchRouteFromApi(originLng, originLat, destLng, destLat, type = 
       const route = {
         walkMin: Math.round(data.route.duration / 60),
         walkDistM: data.route.distance,
-        walkSteps: data.route.steps,
+        walkSteps: data.route.steps || data.route.segments || [],
+        cost: data.route.cost || 0,
+        routeType: type,
         provider: "amap",
       };
       routeCache[key] = route;
@@ -997,7 +1124,9 @@ async function fetchLiveEntity(name, requestedKind, city) {
 }
 
 function makeEntity(name, requestedKind = "dish", city = "上海") {
-  const poi = poiKnowledgeBase[name];
+  const cityPoiKB = getCityPoiKB(city);
+  const cityDishKB = getCityDishKB(city);
+  const poi = cityPoiKB[name] || poiKnowledgeBase[name];
   if (poi) {
     return {
       id: `${poi.kind}-${normalizeId(name)}`,
@@ -1018,7 +1147,7 @@ function makeEntity(name, requestedKind = "dish", city = "上海") {
     };
   }
 
-  const dish = dishKnowledgeBase[name];
+  const dish = cityDishKB[name] || dishKnowledgeBase[name];
   if (dish) {
     return {
       id: `dish-${normalizeId(name)}`,
@@ -1057,7 +1186,7 @@ async function makeEnrichedEntity(name, requestedKind = "dish", city = "上海")
 
 function hydrateEntry(entry) {
   if (entry.entities?.length) return entry;
-  const city = entry.city || document.querySelector("#citySelect").value;
+  const city = entry.city || document.querySelector("#cityInput").value;
   const attractionEntities = (entry.attractions || []).map((name) => makeEntity(name, "attraction", city));
   const foodEntities = (entry.foods || []).map((name) => {
     const known = poiKnowledgeBase[name];
@@ -1272,7 +1401,7 @@ async function buildExtraction(source) {
   await runImageOcr();
   const mediaSignal = getMediaSignalText();
   const combinedSource = [source, mediaSignal].filter(Boolean).join(" ");
-  const city = document.querySelector("#citySelect").value;
+  const city = document.querySelector("#cityInput").value;
   const aiExtraction = state.aiProvider === "openai" ? await fetchAiExtraction({ source, combinedSource, city }) : null;
   const poiExtraction = hasAiExtractedContent(aiExtraction) ? null : await fetchPoiExtraction({ source, combinedSource, city });
   const extraction = hasAiExtractedContent(aiExtraction)
@@ -1331,7 +1460,9 @@ function upsertAttraction(name) {
   if (existing) return existing.id;
 
   const offset = state.attractions.length * 7;
-  const poi = poiKnowledgeBase[name];
+  const city = document.querySelector("#cityInput").value;
+  const cityPoiKB = getCityPoiKB(city);
+  const poi = cityPoiKB[name] || poiKnowledgeBase[name];
   const id = normalizeId(name) || `place-${Date.now()}`;
   state.attractions.push({
     id,
@@ -1425,11 +1556,28 @@ function getLibraryRestaurantOptions(active, knownNames) {
 function getRecommendations() {
   const active = getActiveAttraction();
   const activeId = active.id;
-  const knownNames = new Set(foodDatabase.map((food) => food.name));
-  return [...foodDatabase, ...getLibraryRestaurantOptions(active, knownNames)]
+  const city = document.querySelector("#cityInput").value;
+  const cityFoods = getCityFoods(city).map((food) => {
+    // Build fallback distances for city-specific foods
+    if (!food.distances) {
+      const dist = estimateDistance(active, food);
+      food.distances = { [activeId]: { walk: dist.walk, drive: dist.drive, x: food.lng ? projectLngLatToMap(food.lng, food.lat).x : 50, y: food.lng ? projectLngLatToMap(food.lng, food.lat).y : 50 } };
+    }
+    return food;
+  });
+  const knownNames = new Set(cityFoods.map((food) => food.name));
+  return [...cityFoods, ...getLibraryRestaurantOptions(active, knownNames)]
     .filter((food) => food.distances[activeId])
     .filter((food) => food.meals.includes(state.activeMeal))
     .filter((food) => (state.openOnly ? food.open : true))
+    .filter((food) => {
+      if (state.priceFilter === "all") return true;
+      const priceNum = parseInt(food.price?.replace(/[^0-9]/g, "")) || 50;
+      if (state.priceFilter === "cheap") return priceNum <= 40;
+      if (state.priceFilter === "mid") return priceNum > 40 && priceNum <= 100;
+      if (state.priceFilter === "high") return priceNum > 100;
+      return true;
+    })
     .map((food) => {
       const distance = food.distances[activeId];
       const wishScore = getFoodMatches(food) ? 42 : 18;
@@ -1599,9 +1747,13 @@ function renderRecommendations() {
     const realRoute = state.routeResults[routeId];
     const walkMin = realRoute?.walk?.min ?? food.distance.walk;
     const driveMin = realRoute?.drive?.min ?? food.distance.drive;
+    const transitMin = realRoute?.transit?.min;
+    const transitCost = realRoute?.transit?.cost;
     const walkLabel = realRoute?.walk ? "步行" : "约步行";
     const driveLabel = realRoute?.drive ? "驾车" : "约打车";
     const isReal = Boolean(realRoute?.walk || realRoute?.drive);
+
+    const transitHtml = transitMin ? `<span class="meta-pill live-route">🚇 公交 ${transitMin} 分钟${transitCost ? ` ¥${transitCost}` : ""}</span>` : "";
 
     const card = document.createElement("article");
     card.className = `recommend-card ${index === 0 ? "best" : ""}`;
@@ -1616,6 +1768,7 @@ function renderRecommendations() {
       <div class="rec-meta">
         <span class="meta-pill ${isReal ? "live-route" : ""}">${walkLabel} ${walkMin} 分钟${isReal ? " ✓" : ""}</span>
         <span class="meta-pill ${realRoute?.drive ? "live-route" : ""}">${driveLabel} ${driveMin} 分钟</span>
+        ${transitHtml}
         <span class="meta-pill ${food.open ? "open" : "closed"}">${food.open ? "当前营业" : "待确认"}</span>
         <span class="meta-pill">${escapeHtml(food.opening)}</span>
         <span class="meta-pill">${escapeHtml(food.price)}</span>
@@ -1846,7 +1999,7 @@ function renderExtractionReview(entry) {
 }
 
 async function rebuildPendingEntities(entry) {
-  const city = entry.city || document.querySelector("#citySelect").value;
+  const city = entry.city || document.querySelector("#cityInput").value;
   const entities = await Promise.all([
     ...(entry.attractions || []).map((name) => makeEnrichedEntity(name, "attraction", city)),
     ...(entry.foods || []).map((name) => makeEnrichedEntity(name, inferFoodEntityKind(name), city)),
@@ -1897,7 +2050,7 @@ async function refreshLibraryPoi() {
   try {
     const refreshed = [];
     for (const entry of state.library.map(hydrateEntry)) {
-      const city = entry.city || document.querySelector("#citySelect").value;
+      const city = entry.city || document.querySelector("#cityInput").value;
       const entities = await Promise.all([
         ...(entry.attractions || []).map((name) => makeEnrichedEntity(name, "attraction", city)),
         ...(entry.foods || []).map((name) => {
@@ -2033,14 +2186,16 @@ async function refreshRealRoutes() {
     const routeId = `${active.id}:${food.id}`;
     if (state.routeResults[routeId] && state.routeResults[routeId].walk) return;
 
-    const [walkRoute, driveRoute] = await Promise.all([
+    const [walkRoute, driveRoute, transitRoute] = await Promise.all([
       fetchRouteFromApi(active.lng, active.lat, food.lng, food.lat, "walking"),
       fetchRouteFromApi(active.lng, active.lat, food.lng, food.lat, "driving"),
+      fetchRouteFromApi(active.lng, active.lat, food.lng, food.lat, "transit"),
     ]);
 
     state.routeResults[routeId] = {
       walk: walkRoute ? { min: walkRoute.walkMin, distM: walkRoute.walkDistM, steps: walkRoute.walkSteps } : null,
       drive: driveRoute ? { min: Math.round(driveRoute.walkDistM / 500 + 2), distM: driveRoute.walkDistM } : null,
+      transit: transitRoute ? { min: transitRoute.walkMin, segments: transitRoute.walkSteps, cost: transitRoute.cost } : null,
       provider: walkRoute?.provider || driveRoute?.provider || null,
     };
 
@@ -2054,11 +2209,22 @@ async function refreshRealRoutes() {
 function render(generated = false) {
   state.walkLimit = Number(els.walkLimit.value);
   state.openOnly = els.openOnly.checked;
+  state.priceFilter = els.priceFilter?.value || "all";
   renderAttractions();
   renderFoods();
   renderLibrary();
   renderEntityDatabase();
   renderMediaList();
+
+  if (!state.attractions.length) {
+    // 新城市还没有添加景点
+    els.selectedPlace.innerHTML = `<p class="muted">还没有添加景点。在左侧「愿望清单」中输入景点名，开始为 ${escapeHtml(document.querySelector("#cityInput")?.value || "这个城市")} 规划路线。</p>`;
+    els.recommendList.innerHTML = `<div class="empty-state">添加景点后会在这里推荐附近匹配的美食。</div>`;
+    els.mapCanvas.innerHTML = `<div class="map-road"></div><p class="muted" style="text-align:center;padding-top:40px">添加景点后显示地图路线。</p>`;
+    els.itinerary.innerHTML = `<p class="muted">添加景点和想吃的美食后生成路线。</p>`;
+    return;
+  }
+
   renderSelectedPlace();
   renderRecommendations();
   renderMap();
@@ -2324,7 +2490,92 @@ setupTheme();
 
 els.openOnly.addEventListener("change", () => render());
 els.walkLimit.addEventListener("change", () => render());
+els.priceFilter?.addEventListener("change", () => render());
 els.routeBtn.addEventListener("click", () => render(true));
+
+// 分享/复制行程
+function copyItineraryText() {
+  const active = getActiveAttraction();
+  const recs = getRecommendations();
+  const city = document.querySelector("#cityInput").value;
+  if (!recs.length) return;
+
+  let text = `🗺️ 顺路吃 · ${city} 一日逛吃路线\n`;
+  text += `━━━━━━━━━━━━━━\n`;
+  text += `📍 景点：${active.name}（${active.area}）\n`;
+  text += `━━━━━━━━━━━━━━\n`;
+
+  recs.slice(0, 3).forEach((food, i) => {
+    const routeId = `${active.id}:${food.id}`;
+    const realRoute = state.routeResults[routeId];
+    const walkMin = realRoute?.walk?.min ?? food.distance.walk;
+    text += `\n${i + 1}. ${food.name} · ${food.category}\n`;
+    text += `   ${food.address}\n`;
+    text += `   🚶 步行 ${walkMin} 分钟 | ${food.price}\n`;
+    text += `   🕐 ${food.opening}\n`;
+  });
+
+  text += `\n━━━━━━━━━━━━━━\n`;
+  text += `💡 ${recs[0]?.note || "建议出发前确认营业时间"}\n`;
+  text += `📅 ${els.tripDate?.value || "今天"}\n`;
+  text += `来自 顺路吃 shunluchi.onrender.com\n`;
+
+  if (navigator.clipboard?.writeText) {
+    navigator.clipboard.writeText(text).then(() => {
+      els.shareRouteBtn.textContent = "已复制！";
+      setTimeout(() => { els.shareRouteBtn.textContent = "📋 复制行程"; }, 2000);
+    }).catch(() => {
+      alert("复制失败，请手动选择文字。\n\n" + text);
+    });
+  } else {
+    // Fallback for older browsers
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.style.position = "fixed";
+    textarea.style.opacity = "0";
+    document.body.appendChild(textarea);
+    textarea.select();
+    try {
+      document.execCommand("copy");
+      els.shareRouteBtn.textContent = "已复制！";
+      setTimeout(() => { els.shareRouteBtn.textContent = "📋 复制行程"; }, 2000);
+    } catch {
+      alert("复制失败，请手动选择文字。\n\n" + text);
+    }
+    document.body.removeChild(textarea);
+  }
+}
+
+els.shareRouteBtn?.addEventListener("click", () => {
+  copyItineraryText();
+});
+
+// 切换城市时重新加载景点和美食数据
+const cityInput = document.querySelector("#cityInput");
+if (cityInput) {
+  let cityDebounce;
+  const onCityChange = () => {
+    clearTimeout(cityDebounce);
+    cityDebounce = setTimeout(() => {
+      const city = cityInput.value.trim();
+      if (!city) return;
+      // 加载该城市预设数据（如果有的话），否则从空白开始
+      const presetAttractions = getCityAttractions(city);
+      state.attractions = presetAttractions.length
+        ? presetAttractions.map((a) => ({ ...a }))
+        : [];
+      if (state.attractions.length) {
+        state.activeAttractionId = state.attractions[0].id;
+      }
+      // 清空路由缓存以适配新城市坐标
+      Object.keys(routeCache).forEach((k) => delete routeCache[k]);
+      state.routeResults = {};
+      render();
+    }, 400);
+  };
+  cityInput.addEventListener("input", onCityChange);
+  cityInput.addEventListener("change", onCityChange);
+}
 
 setDefaultTripDate();
 render();

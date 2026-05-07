@@ -18,7 +18,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700;900&family=Mochiy+Pop+One&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=manga-1" />
+    <link rel="stylesheet" href="./styles.css?v=freecity-1" />
   </head>
   <body>
     <svg style="position:absolute;width:0;height:0" aria-hidden="true">
@@ -48,12 +48,19 @@
           </div>
           <label>
             城市
-            <select id="citySelect">
-              <option>上海</option>
-              <option>杭州</option>
-              <option>成都</option>
-              <option>广州</option>
-            </select>
+            <input id="cityInput" type="text" list="citySuggestions" value="上海" placeholder="输入城市名" />
+            <datalist id="citySuggestions">
+              <option value="上海" />
+              <option value="杭州" />
+              <option value="成都" />
+              <option value="广州" />
+              <option value="北京" />
+              <option value="深圳" />
+              <option value="南京" />
+              <option value="苏州" />
+              <option value="重庆" />
+              <option value="西安" />
+            </datalist>
           </label>
           <label>
             日期
@@ -223,6 +230,15 @@
                 <input id="openOnly" type="checkbox" checked />
                 只看当前营业
               </label>
+              <label>
+                人均
+                <select id="priceFilter">
+                  <option value="all">不限</option>
+                  <option value="cheap">40 以下</option>
+                  <option value="mid">40-100</option>
+                  <option value="high">100 以上</option>
+                </select>
+              </label>
             </div>
 
             <div class="recommend-list" id="recommendList"></div>
@@ -233,6 +249,9 @@
               <div>
                 <p class="eyebrow">Live Preview</p>
                 <h2 id="mapTitle">地图与路线</h2>
+              </div>
+              <div class="map-actions">
+                <button class="secondary-btn compact" id="shareRouteBtn" type="button">📋 复制行程</button>
               </div>
             </div>
 
@@ -246,7 +265,7 @@
       </main>
     </div>
 
-    <script src="./app.js?v=handdrawn-1"></script>
-    <script src="./library-import.js?v=handdrawn-1"></script>
+    <script src="./app.js?v=freecity-1"></script>
+    <script src="./library-import.js?v=freecity-1"></script>
   </body>
 </html>

@@ -8,6 +8,6 @@ git branch -M main
 git remote remove origin 2>nul
 git remote add origin https://github.com/chenle030907-crypto/shunluchi.git
 git add .
-git commit -m "feat: Japanese manga comic style UI redesign + real Amap routes + dark mode"
+git commit -m "feat: free city input + custom city support + transit routes + price filter + share"
 git push -u origin main --force
 pause

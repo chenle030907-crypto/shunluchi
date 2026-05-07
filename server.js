@@ -1095,7 +1095,7 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
-    if (!["walking", "driving", "bicycling"].includes(type)) {
+    if (!["walking", "driving", "bicycling", "transit"].includes(type)) {
       sendJson(res, 400, { ok: false, reason: "invalid_route_type" });
       return;
     }
@@ -1119,6 +1119,42 @@ const server = http.createServer(async (req, res) => {
       const path = data.route?.paths?.[0];
       if (!path) {
         sendJson(res, 200, { ok: true, provider: "amap", live: true, reason: "empty", route: null });
+        return;
+      }
+
+      // Transit routes have a different structure with segments
+      if (type === "transit") {
+        const segments = (path.segments || []).map((seg) => {
+          const busInfo = seg.bus?.buslines?.[0];
+          const walkingInfo = seg.walking;
+          const isWalking = !busInfo;
+          return {
+            mode: isWalking ? "walking" : (busInfo.type?.includes("地铁") ? "subway" : "bus"),
+            name: busInfo?.name || "",
+            departure: busInfo?.departure_stop?.name || seg.walking?.origin || "",
+            arrival: busInfo?.arrival_stop?.name || seg.walking?.destination || "",
+            distance: isWalking ? (walkingInfo?.distance || 0) : (busInfo?.distance || 0),
+            duration: isWalking ? (walkingInfo?.duration || 0) : (busInfo?.duration || 0),
+            stationCount: busInfo?.via_num || 0,
+            instruction: seg.walking?.steps?.[0]?.instruction?.replace(/<[^>]+>/g, "") || "",
+          };
+        });
+
+        sendJson(res, 200, {
+          ok: true,
+          provider: "amap",
+          live: true,
+          reason: "ok",
+          route: {
+            distance: path.distance,
+            duration: path.duration,
+            cost: path.cost || 0,
+            origin: { lng: Number(origin.split(",")[0]), lat: Number(origin.split(",")[1]) },
+            destination: { lng: Number(destination.split(",")[0]), lat: Number(destination.split(",")[1]) },
+            segments,
+            steps: [],
+          },
+        });
         return;
       }
 
