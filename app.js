@@ -2257,6 +2257,71 @@ els.mealTabs.addEventListener("click", (event) => {
   render();
 });
 
+function setupTheme() {
+  const saved = localStorage.getItem("shunluchi.theme.v1");
+  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const themeBtn = document.querySelector("#themeToggle");
+
+  function applyTheme(isDark) {
+    document.documentElement.style.colorScheme = isDark ? "dark" : "light";
+    if (themeBtn) themeBtn.textContent = isDark ? "☀️" : "🌙";
+    localStorage.setItem("shunluchi.theme.v1", isDark ? "dark" : "light");
+  }
+
+  if (saved === "dark") applyTheme(true);
+  else if (saved === "light") applyTheme(false);
+  else applyTheme(prefersDark);
+
+  if (themeBtn) {
+    themeBtn.addEventListener("click", () => {
+      const current = document.documentElement.style.colorScheme === "dark";
+      applyTheme(!current);
+    });
+  }
+
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (event) => {
+    if (!localStorage.getItem("shunluchi.theme.v1")) {
+      document.documentElement.style.colorScheme = event.matches ? "dark" : "light";
+      if (themeBtn) themeBtn.textContent = event.matches ? "☀️" : "🌙";
+    }
+  });
+}
+
+function showRouteSkeletons() {
+  const active = getActiveAttraction();
+  const recs = getRecommendations().slice(0, 3);
+  if (!recs.length || !active.lng) return;
+
+  const skeletons = recs
+    .map(
+      (food, index) => `
+    <article class="skeleton-card">
+      <div class="skeleton skeleton-title"></div>
+      <div class="skeleton skeleton-line"></div>
+      <div class="skeleton skeleton-line" style="width:75%"></div>
+      <div class="skeleton-row" style="margin-top:10px">
+        <div class="skeleton skeleton-pill"></div>
+        <div class="skeleton skeleton-pill"></div>
+        <div class="skeleton skeleton-pill"></div>
+      </div>
+    </article>
+  `,
+    )
+    .join("");
+
+  const currentContent = els.recommendList.innerHTML;
+  if (currentContent.includes("skeleton-card")) return;
+  els.recommendList.dataset.preSkeleton = currentContent;
+  els.recommendList.innerHTML = skeletons;
+}
+
+function hideRouteSkeletons() {
+  els.recommendList.innerHTML = els.recommendList.dataset.preSkeleton || els.recommendList.innerHTML;
+  delete els.recommendList.dataset.preSkeleton;
+}
+
+setupTheme();
+
 els.openOnly.addEventListener("change", () => render());
 els.walkLimit.addEventListener("change", () => render());
 els.routeBtn.addEventListener("click", () => render(true));

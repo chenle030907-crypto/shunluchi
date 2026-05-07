@@ -15,9 +15,22 @@
     <link rel="icon" href="./icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
     <title>顺路吃 - 美食旅行攻略原型</title>
-    <link rel="stylesheet" href="./styles.css?v=library-backup-2" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css?v=handdrawn-1" />
   </head>
   <body>
+    <svg style="position:absolute;width:0;height:0" aria-hidden="true">
+      <filter id="rough-edge" x="-5%" y="-5%" width="110%" height="110%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" result="noise" />
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="3" xChannelSelector="R" yChannelSelector="G" />
+      </filter>
+      <filter id="rough-edge-lg" x="-5%" y="-5%" width="110%" height="110%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="4" result="noise" />
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="5" xChannelSelector="R" yChannelSelector="G" />
+      </filter>
+    </svg>
     <div class="app-shell">
       <header class="topbar">
         <div>
@@ -25,6 +38,7 @@
           <h1>顺路吃</h1>
         </div>
         <div class="trip-controls" aria-label="行程设置">
+          <button type="button" class="theme-toggle" id="themeToggle" aria-label="切换暗色模式" title="切换暗色模式">🌙</button>
           <div class="api-status" id="apiStatus">
             <span class="api-dot" aria-hidden="true"></span>
             <span>接口检测中</span>
@@ -233,7 +247,7 @@
       </main>
     </div>
 
-    <script src="./app.js?v=library-backup-2"></script>
-    <script src="./library-import.js?v=library-backup-2"></script>
+    <script src="./app.js?v=handdrawn-1"></script>
+    <script src="./library-import.js?v=handdrawn-1"></script>
   </body>
 </html>
